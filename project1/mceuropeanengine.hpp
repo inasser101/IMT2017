@@ -60,9 +60,28 @@ namespace QuantLib {
              Size requiredSamples,
              Real requiredTolerance,
              Size maxSamples,
-             BigNatural seed);
-      protected:
+             BigNatural seed,
+			 bool useConstantProcess);
+	  protected
         boost::shared_ptr<path_pricer_type> pathPricer() const;
+	  private :
+		  bool useConstantProcess;
+	  public: 
+		boost::shared_ptr<path_generator_type> pathGenerator() const {
+
+			Size dimensions = process_->factors();
+			TimeGrid grid = this->timeGrid();
+			typename RNG::rsg_type generator =
+				RNG::make_sequence_generator(dimensions*(grid.size() - 1), seed_);
+			if (this->useConstantProcess) {
+
+			}
+			else {
+				return boost::shared_ptr<path_generator_type>(
+					new path_generator_type(process_, grid,
+						generator, brownianBridge_));
+			}
+		}
     };
 
     //! Monte Carlo European engine factory

@@ -25,7 +25,7 @@
 
 #ifndef montecarlo_european_engine_hpp
 #define montecarlo_european_engine_hpp
-
+#include "constantblackscholesprocess.hpp"
 #include <ql/pricingengines/vanilla/mcvanillaengine.hpp>
 #include <ql/processes/blackscholesprocess.hpp>
 #include <ql/termstructures/volatility/equityfx/blackconstantvol.hpp>
@@ -65,7 +65,7 @@ namespace QuantLib {
 	  protected
         boost::shared_ptr<path_pricer_type> pathPricer() const;
 	  private :
-		  bool useConstantProcess;
+		  bool useConstantProcess_;
 	  public: 
 		boost::shared_ptr<path_generator_type> pathGenerator() const {
 
@@ -73,7 +73,20 @@ namespace QuantLib {
 			TimeGrid grid = this->timeGrid();
 			typename RNG::rsg_type generator =
 				RNG::make_sequence_generator(dimensions*(grid.size() - 1), seed_);
-			if (this->useConstantProcess) {
+			if (this->useConstantProcess_) {
+				//underlyingValue???
+
+				
+				return boost::shared_ptr<path_generator_type>(
+				new path_generator_type(
+
+						boost::shared_ptr<blackScholesModel>(
+							new blackScholesModel(process_->x0_->value(), process_->riskFreeRate,
+								process_->dividendYield_, process_->blackVolatility)),
+						grid,
+						generator, 
+						brownianBridge_)
+					);
 
 			}
 			else {

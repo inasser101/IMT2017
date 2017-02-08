@@ -2,26 +2,23 @@
 #include <ql/stochasticprocess.hpp>
 #ifndef constant_blacksholes_process_hpp
 #define constant_blacksholes_process_hpp
-#include <boost/math/distributions/normal.hpp>
 
+#include <ql/termstructures/volatility/equityfx/localvolsurface.hpp>
+#include <ql/termstructures/volatility/equityfx/localvolcurve.hpp>
+#include <ql/termstructures/volatility/equityfx/localconstantvol.hpp>
 namespace QuantLib {
 	//NEED help, idk, it seem so wrong
     class ConstantBlackScholesProcess : public StochasticProcess1D {
-	public :
-		double calculd1();
-		double calculd2();
-		double optionPrice();
+		BlackScholesModel(
+			const Real underlyingValue,
+			const Handle<YieldTermStructure>& riskFree,
+			const Handle<BlackVolTermStructure>& blackVol,
+			const Handle<BlackVolTermStructure>& dividendYield,
+			const boost::shared_ptr<discretization>& disc);
+	
 	protected:
 		blackScholesModel();
-		blackScholesModel(char callputchoice, double S, double rate, double dy, double strike, double vol, double maturity);
-	private:
-		double underlyingValue;
-		double riskFreeRate;
-		double dividendYield;
-		double volatility;
-		double exercicePrice;
-		double exerciceDate;
-		char callputchoice;
+		
 
 	
         // your implementation goes here

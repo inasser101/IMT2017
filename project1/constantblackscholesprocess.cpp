@@ -1,8 +1,9 @@
-#include <ql/processes/blackscholesprocess.hpp>
+#include <ql/stochasticprocess.hpp>
 #include "constantblackscholesprocess.hpp"
 #include <ql/termstructures/volatility/equityfx/localvolsurface.hpp>
 #include <ql/termstructures/volatility/equityfx/localvolcurve.hpp>
 #include <ql/termstructures/volatility/equityfx/localconstantvol.hpp>
+#include <ql/termstructures/yieldtermstructure.hpp>
 using namespace std;
 
 namespace QuantLib {
@@ -12,100 +13,67 @@ namespace QuantLib {
 	\f]
 	*/
 
-	class blackScholesModel : public StochasticProcess1D
+	class constantBlackScholesModel : public StochasticProcess1D
 	{
 	public:
 
-		BlackScholesModel(
+		constantBlackScholesModel(
 			const Real underlyingValue,
+			const Time exerciceDate,
 			const Handle<YieldTermStructure>& riskFree,
 			const Handle<BlackVolTermStructure>& blackVol,
 			const Handle<BlackVolTermStructure>& dividendYield,
 			const boost::shared_ptr<discretization>& disc)
 			:StochasticProcess1D(disc), underlyingValue_(underlyingValue), 
-			riskFreeRate_(riskFree), dividendYield_(dividend), blackVolatility_(blackVol) {
-				registerWith(underlyingValue_);
+			riskFreeRate_(riskFree), dividendYield_(dividendYield), blackVolatility_(blackVol) {
 				registerWith(riskFreeRate_);
 				registerWith(dividendYield_);
 				registerWith(blackVolatility_);
-			}
-		~blackScholesModel();
+				exerciceDate_ = exerciceDate;
+				driftC_ = riskFreeRate_->zeroRate(exerciceDate_, Continuous,
+					NoFrequency, true)- dividendYield_->zeroRate(exerciceDate_, Continuous,
+						NoFrequency, true);
+				diffusionC_ = blackVolatility_->blackVol(exerciceDate_, underlyingValue);
+
+		};
 
 	private:
 		Real underlyingValue_;
 		Handle<YieldTermStructure> riskFreeRate_;
 		Handle<YieldTermStructure> 	dividendYield_;
 		Handle<BlackVolTermStructure> blackVolatility_;
-		Real driftC;
-		Real diffusionC;
-
+		Real driftC_;
+		Real diffusionC_;
+		Time exerciceDate_;
 	private:
-		Real BlackScholesModel::drift() const {
-			return riskFreeRate_ - dividendYield_;
-		}
-
-		Real BlackScholesModel::diffusion() const {
-			return blackVolatility_;
-		}
-
-
+		// this will be removed
 		/*
-	private:
-		double underlyingValue;
-		double riskFreeRate;
-		double dividendYield;
-		double volatility;
-		double exercicePrice;
-		double exerciceDate;
-		char callputchoice; //callputchoice='c' pour call et callputchoice='p' pour put
+		Real constantBlackScholesModel::drift() const {
+			return driftC_;
+		}
+
+		Real constantBlackScholesModel::diffusion() const {
+			return diffusionC_;
+		}
 		*/
+
+		//// this code will be added in Stochasticprocess.hpp
+		/*
+		inline Real StochasticProcess1D::drift(Time t, Real x) const {;
+        return this.driftC_;
+    }
+
+    inline Real StochasticProcess1D::diffusion(Time t, Real x) const {
+        return this.diffusionC_;
+    }
+
+		*/
+		
+	
 
 	};
 
 	
-	blackScholesModel::blackScholesModel()
-	{
-	}
-	/*
-	double blackScholesModel::calculd1()
-	{
-
-
-		return (log(underlyingValue / exercicePrice) +
-			(riskFreeRate - dividendYield + pow(volatility, 2) / 2.0)*
-			exerciceDate) / (volatility*sqrt(exerciceDate));
-	}
-
-	double blackScholesModel::calculd2()
-	{
-		return (log(underlyingValue / exercicePrice) +
-			(riskFreeRate - dividendYield - pow(volatility, 2) / 2)
-			*exerciceDate) / (volatility*sqrt(exerciceDate));
-	}
-	double blackScholesModel::optionPrice()
-	{
-		if (callputchoice == 'c')
-		{
-			cout << "call price: " << underlyingValue*exp(-1.0 * dividendYield*exerciceDate)*cdf(calculd1())
-				- exercicePrice*exp(-1 * riskFreeRate*exerciceDate)*cdf(calculd2()) << endl;
-			cout << cdf(calculd1()) << endl;
-			cout << exp(-1.0 * dividendYield*exerciceDate)*cdf(calculd1()) << endl;
-
-			return underlyingValue*exp(-1 * dividendYield*exerciceDate)*
-				cdf(calculd1()) - exercicePrice*exp(-1 * riskFreeRate*exerciceDate)*
-				cdf(calculd2());
-		}
-		if (callputchoice == 'p')
-		{
-			cout << "put price " << -underlyingValue*exp(-1.0 *
-				dividendYield*exerciceDate)*cdf(-calculd1()) +
-				exercicePrice*exp(-1 * riskFreeRate*exerciceDate)*cdf(-calculd1()) << endl;
-			return -underlyingValue*exp(-1 * dividendYield*exerciceDate)*
-				cdf(-calculd1()) + exercicePrice*exp(-1 * riskFreeRate*exerciceDate)*
-				cdf(-calculd1());
-		}
-	}
-	*/
 	
 
 

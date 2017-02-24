@@ -19,19 +19,16 @@ namespace QuantLib {
 
 		constantBlackScholesModel(
 			const Real underlyingValue,
-			const Time exerciceDate,
+			const Date exerciceDate,
 			const Handle<YieldTermStructure>& riskFree,
 			const Handle<BlackVolTermStructure>& blackVol,
 			const Handle<BlackVolTermStructure>& dividendYield,
 			const boost::shared_ptr<discretization>& disc)
 			:StochasticProcess1D(disc), underlyingValue_(underlyingValue), 
 			riskFreeRate_(riskFree), dividendYield_(dividendYield), blackVolatility_(blackVol) {
-				registerWith(riskFreeRate_);
-				registerWith(dividendYield_);
-				registerWith(blackVolatility_);
 				exerciceDate_ = exerciceDate;
-				driftC_ = riskFreeRate_->zeroRate(exerciceDate_, Continuous,
-					NoFrequency, true)- dividendYield_->zeroRate(exerciceDate_, Continuous,
+				driftC_ = riskFreeRate_->zeroRate(exerciceDate_, riskFreeRate_->dayCounter(),Continuous,
+					NoFrequency, true)- dividendYield_->zeroRate(exerciceDate_,riskFreeRate_->dayCounter(), Continuous,
 						NoFrequency, true);
 				diffusionC_ = blackVolatility_->blackVol(exerciceDate_, underlyingValue);
 
@@ -44,27 +41,27 @@ namespace QuantLib {
 		Handle<BlackVolTermStructure> blackVolatility_;
 		Real driftC_;
 		Real diffusionC_;
-		Time exerciceDate_;
+		Date exerciceDate_;
 	private:
 		// this will be removed
-		/*
-		Real constantBlackScholesModel::drift() const {
-			return driftC_;
+		
+		Real constantBlackScholesModel::drift(Time t, Real x) const {
+			return driftC_*x;
 		}
 
-		Real constantBlackScholesModel::diffusion() const {
-			return diffusionC_;
+		Real constantBlackScholesModel::diffusion(Time t,Real x) const {
+			return diffusionC_*x;
 		}
-		*/
+		
 
 		//// this code will be added in Stochasticprocess.hpp
 		/*
 		inline Real StochasticProcess1D::drift(Time t, Real x) const {;
-        return this.driftC_;
+        return this.driftC_*x;
     }
 
     inline Real StochasticProcess1D::diffusion(Time t, Real x) const {
-        return this.diffusionC_;
+        return this.diffusionC_*x;
     }
 
 		*/

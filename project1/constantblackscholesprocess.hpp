@@ -11,14 +11,20 @@
 namespace QuantLib {
 	//NEED help, idk, it seem so wrong
     class constantBlackScholesModel : public StochasticProcess1D {
+	public:
 		constantBlackScholesModel(
 			const Real underlyingValue,
+			const Time exerciceDate,
 			const Handle<YieldTermStructure>& riskFree,
 			const Handle<BlackVolTermStructure>& blackVol,
 			const Handle<BlackVolTermStructure>& dividendYield,
 			const boost::shared_ptr<discretization>& disc);
+
+
+		Real drift(Time t, Real x) const;
+
+		Real diffusion(Time t, Real x) const;
 	
-	protected:
 		
 		
 

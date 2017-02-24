@@ -74,14 +74,12 @@ namespace QuantLib {
 			typename RNG::rsg_type generator =
 				RNG::make_sequence_generator(dimensions*(grid.size() - 1), seed_);
 			if (this->useConstantProcess_) {
-				//underlyingValue???
-
 				
 				return boost::shared_ptr<path_generator_type>(
 				new path_generator_type(
 
-						boost::shared_ptr<blackScholesModel>(
-							new blackScholesModel(process_->x0_->value(), process_->riskFreeRate,
+						boost::shared_ptr<constantBlackScholesModel>(
+							new constantBlackScholesModel(process_->x0_->value(), process_->riskFreeRate,
 								process_->dividendYield_, process_->blackVolatility)),
 						grid,
 						generator, 

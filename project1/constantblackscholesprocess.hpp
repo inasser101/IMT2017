@@ -9,23 +9,29 @@
 #include <ql/termstructures/volatility/equityfx/localvolcurve.hpp>
 #include <ql/termstructures/volatility/equityfx/localconstantvol.hpp>
 namespace QuantLib {
-	//NEED help, idk, it seem so wrong
     class constantBlackScholesModel : public StochasticProcess1D {
+	private:
+		Handle<Quote> underlyingValue_;
+		Handle<YieldTermStructure> riskFreeRate_;
+		Handle<YieldTermStructure> 	dividendYield_;
+		Handle<BlackVolTermStructure> blackVolatility_;
+		Real driftC_;
+		Real diffusionC_;
+		Date exerciceDate_;
 	public:
+		
 		constantBlackScholesModel(
-			const Real underlyingValue,
-			const Time exerciceDate,
+			const Handle <Quote>  underlyingValue,
+			const Date exerciceDate,
 			const Handle<YieldTermStructure>& riskFree,
 			const Handle<BlackVolTermStructure>& blackVol,
-			const Handle<BlackVolTermStructure>& dividendYield,
+			const Handle<YieldTermStructure>& dividendYield,
 			const boost::shared_ptr<discretization>& disc);
-
 
 		Real drift(Time t, Real x) const;
 
 		Real diffusion(Time t, Real x) const;
 	
-		
 		
 
 	

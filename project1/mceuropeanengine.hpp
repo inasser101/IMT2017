@@ -51,8 +51,10 @@ namespace QuantLib {
         typedef typename MCVanillaEngine<SingleVariate,RNG,S>::stats_type
             stats_type;
         // constructor
+		MCEuropeanEngine_2(
+			const boost::shared_ptr<constantBlackScholesModel>& process);
         MCEuropeanEngine_2(
-             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
+             const boost::shared_ptr<constantBlackScholesModel>& process,
              Size timeSteps,
              Size timeStepsPerYear,
              bool brownianBridge,
@@ -100,7 +102,7 @@ namespace QuantLib {
     class MakeMCEuropeanEngine_2 {
       public:
         MakeMCEuropeanEngine_2(
-                    const boost::shared_ptr<GeneralizedBlackScholesProcess>&);
+                    const boost::shared_ptr<constantBlackScholesModel>&);
         // named parameters
         MakeMCEuropeanEngine_2& withSteps(Size steps);
         MakeMCEuropeanEngine_2& withStepsPerYear(Size steps);
@@ -113,7 +115,7 @@ namespace QuantLib {
         // conversion to pricing engine
         operator boost::shared_ptr<PricingEngine>() const;
       private:
-        boost::shared_ptr<GeneralizedBlackScholesProcess> process_;
+        boost::shared_ptr<constantBlackScholesModel> process_;
         bool antithetic_;
         Size steps_, stepsPerYear_, samples_, maxSamples_;
         Real tolerance_;

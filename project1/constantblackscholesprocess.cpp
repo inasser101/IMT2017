@@ -42,18 +42,15 @@ namespace QuantLib {
 			return diffusionC_*x;
 		}
 		
+		Real constantBlackScholesModel::variance(const StochasticProcess1D&,
+			Time t0, Real x0, Time dt) const {
+			return discretization_->variance(*this, t0, x0, dt);
+		}
 
-		//// this code will be added in Stochasticprocess.hpp
-		/*
-		inline Real StochasticProcess1D::drift(Time t, Real x) const {;
-        return this.driftC_*x;
-    }
+		Real constantBlackScholesModel::x0()const {
+			return underlyingValue_->value();
+		}
 
-    inline Real StochasticProcess1D::diffusion(Time t, Real x) const {
-        return this.diffusionC_*x;
-    }
-
-		*/
 		
 	
 

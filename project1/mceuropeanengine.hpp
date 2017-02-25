@@ -31,6 +31,7 @@
 #include <ql/termstructures/volatility/equityfx/blackconstantvol.hpp>
 #include <ql/termstructures/volatility/equityfx/blackvariancecurve.hpp>
 
+#include <ql/quantlib.hpp>
 namespace QuantLib {
 
     //! European option pricing engine using Monte Carlo simulation
@@ -51,10 +52,8 @@ namespace QuantLib {
         typedef typename MCVanillaEngine<SingleVariate,RNG,S>::stats_type
             stats_type;
         // constructor
-		MCEuropeanEngine_2(
-			const boost::shared_ptr<constantBlackScholesModel>& process);
         MCEuropeanEngine_2(
-             const boost::shared_ptr<constantBlackScholesModel>& process,
+             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
              Size timeSteps,
              Size timeStepsPerYear,
              bool brownianBridge,
@@ -62,9 +61,8 @@ namespace QuantLib {
              Size requiredSamples,
              Real requiredTolerance,
              Size maxSamples,
-             BigNatural seed,
-			 bool useConstantProcess);
-	  protected
+             BigNatural seed);
+	protected:
         boost::shared_ptr<path_pricer_type> pathPricer() const;
 	  private :
 		  bool useConstantProcess_;
@@ -102,7 +100,7 @@ namespace QuantLib {
     class MakeMCEuropeanEngine_2 {
       public:
         MakeMCEuropeanEngine_2(
-                    const boost::shared_ptr<constantBlackScholesModel>&);
+                    const boost::shared_ptr<GeneralizedBlackScholesProcess>&);
         // named parameters
         MakeMCEuropeanEngine_2& withSteps(Size steps);
         MakeMCEuropeanEngine_2& withStepsPerYear(Size steps);
@@ -115,7 +113,7 @@ namespace QuantLib {
         // conversion to pricing engine
         operator boost::shared_ptr<PricingEngine>() const;
       private:
-        boost::shared_ptr<constantBlackScholesModel> process_;
+        boost::shared_ptr<GeneralizedBlackScholesProcess> process_;
         bool antithetic_;
         Size steps_, stepsPerYear_, samples_, maxSamples_;
         Real tolerance_;
@@ -136,159 +134,160 @@ namespace QuantLib {
 
 
     // inline definitions
+	// inline definitions
 
-    template <class RNG, class S>
-    inline
-    MCEuropeanEngine_2<RNG,S>::MCEuropeanEngine_2(
-             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
-             Size timeSteps,
-             Size timeStepsPerYear,
-             bool brownianBridge,
-             bool antitheticVariate,
-             Size requiredSamples,
-             Real requiredTolerance,
-             Size maxSamples,
-             BigNatural seed)
-    : MCVanillaEngine<SingleVariate,RNG,S>(process,
-                                           timeSteps,
-                                           timeStepsPerYear,
-                                           brownianBridge,
-                                           antitheticVariate,
-                                           false,
-                                           requiredSamples,
-                                           requiredTolerance,
-                                           maxSamples,
-                                           seed) {}
-
-
-    template <class RNG, class S>
-    inline
-    boost::shared_ptr<typename MCEuropeanEngine_2<RNG,S>::path_pricer_type>
-    MCEuropeanEngine_2<RNG,S>::pathPricer() const {
-
-        boost::shared_ptr<PlainVanillaPayoff> payoff =
-            boost::dynamic_pointer_cast<PlainVanillaPayoff>(
-                this->arguments_.payoff);
-        QL_REQUIRE(payoff, "non-plain payoff given");
-
-        boost::shared_ptr<GeneralizedBlackScholesProcess> process =
-            boost::dynamic_pointer_cast<GeneralizedBlackScholesProcess>(
-                this->process_);
-        QL_REQUIRE(process, "Black-Scholes process required");
-
-        return boost::shared_ptr<
-                       typename MCEuropeanEngine_2<RNG,S>::path_pricer_type>(
-          new EuropeanPathPricer_2(
-              payoff->optionType(),
-              payoff->strike(),
-              process->riskFreeRate()->discount(this->timeGrid().back())));
-    }
+	template <class RNG, class S>
+	inline
+		MCEuropeanEngine_2<RNG, S>::MCEuropeanEngine_2(
+			const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
+			Size timeSteps,
+			Size timeStepsPerYear,
+			bool brownianBridge,
+			bool antitheticVariate,
+			Size requiredSamples,
+			Real requiredTolerance,
+			Size maxSamples,
+			BigNatural seed)
+		: MCVanillaEngine<SingleVariate, RNG, S>(process,
+			timeSteps,
+			timeStepsPerYear,
+			brownianBridge,
+			antitheticVariate,
+			false,
+			requiredSamples,
+			requiredTolerance,
+			maxSamples,
+			seed) {}
 
 
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>::MakeMCEuropeanEngine_2(
-             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process)
-    : process_(process), antithetic_(false),
-      steps_(Null<Size>()), stepsPerYear_(Null<Size>()),
-      samples_(Null<Size>()), maxSamples_(Null<Size>()),
-      tolerance_(Null<Real>()), brownianBridge_(false), seed_(0) {}
+	template <class RNG, class S>
+	inline
+		boost::shared_ptr<typename MCEuropeanEngine_2<RNG, S>::path_pricer_type>
+		MCEuropeanEngine_2<RNG, S>::pathPricer() const {
 
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withSteps(Size steps) {
-        steps_ = steps;
-        return *this;
-    }
+		boost::shared_ptr<PlainVanillaPayoff> payoff =
+			boost::dynamic_pointer_cast<PlainVanillaPayoff>(
+				this->arguments_.payoff);
+		QL_REQUIRE(payoff, "non-plain payoff given");
 
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withStepsPerYear(Size steps) {
-        stepsPerYear_ = steps;
-        return *this;
-    }
+		boost::shared_ptr<GeneralizedBlackScholesProcess> process =
+			boost::dynamic_pointer_cast<GeneralizedBlackScholesProcess>(
+				this->process_);
+		QL_REQUIRE(process, "Black-Scholes process required");
 
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withSamples(Size samples) {
-        QL_REQUIRE(tolerance_ == Null<Real>(),
-                   "tolerance already set");
-        samples_ = samples;
-        return *this;
-    }
-
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withAbsoluteTolerance(Real tolerance) {
-        QL_REQUIRE(samples_ == Null<Size>(),
-                   "number of samples already set");
-        QL_REQUIRE(RNG::allowsErrorEstimate,
-                   "chosen random generator policy "
-                   "does not allow an error estimate");
-        tolerance_ = tolerance;
-        return *this;
-    }
-
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withMaxSamples(Size samples) {
-        maxSamples_ = samples;
-        return *this;
-    }
-
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withSeed(BigNatural seed) {
-        seed_ = seed;
-        return *this;
-    }
-
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withBrownianBridge(bool brownianBridge) {
-        brownianBridge_ = brownianBridge;
-        return *this;
-    }
-
-    template <class RNG, class S>
-    inline MakeMCEuropeanEngine_2<RNG,S>&
-    MakeMCEuropeanEngine_2<RNG,S>::withAntitheticVariate(bool b) {
-        antithetic_ = b;
-        return *this;
-    }
-
-    template <class RNG, class S>
-    inline
-    MakeMCEuropeanEngine_2<RNG,S>::operator boost::shared_ptr<PricingEngine>()
-                                                                      const {
-        QL_REQUIRE(steps_ != Null<Size>() || stepsPerYear_ != Null<Size>(),
-                   "number of steps not given");
-        QL_REQUIRE(steps_ == Null<Size>() || stepsPerYear_ == Null<Size>(),
-                   "number of steps overspecified");
-        return boost::shared_ptr<PricingEngine>(new
-            MCEuropeanEngine_2<RNG,S>(process_,
-                                      steps_,
-                                      stepsPerYear_,
-                                      brownianBridge_,
-                                      antithetic_,
-                                      samples_, tolerance_,
-                                      maxSamples_,
-                                      seed_));
-    }
+		return boost::shared_ptr<
+			typename MCEuropeanEngine_2<RNG, S>::path_pricer_type>(
+				new EuropeanPathPricer_2(
+					payoff->optionType(),
+					payoff->strike(),
+					process->riskFreeRate()->discount(this->timeGrid().back())));
+	}
 
 
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>::MakeMCEuropeanEngine_2(
+		const boost::shared_ptr<GeneralizedBlackScholesProcess>& process)
+		: process_(process), antithetic_(false),
+		steps_(Null<Size>()), stepsPerYear_(Null<Size>()),
+		samples_(Null<Size>()), maxSamples_(Null<Size>()),
+		tolerance_(Null<Real>()), brownianBridge_(false), seed_(0) {}
 
-    inline EuropeanPathPricer_2::EuropeanPathPricer_2(Option::Type type,
-                                                      Real strike,
-                                                      DiscountFactor discount)
-    : payoff_(type, strike), discount_(discount) {
-        QL_REQUIRE(strike>=0.0,
-                   "strike less than zero not allowed");
-    }
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withSteps(Size steps) {
+		steps_ = steps;
+		return *this;
+	}
 
-    inline Real EuropeanPathPricer_2::operator()(const Path& path) const {
-        QL_REQUIRE(path.length() > 0, "the path cannot be empty");
-        return payoff_(path.back()) * discount_;
-    }
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withStepsPerYear(Size steps) {
+		stepsPerYear_ = steps;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withSamples(Size samples) {
+		QL_REQUIRE(tolerance_ == Null<Real>(),
+			"tolerance already set");
+		samples_ = samples;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withAbsoluteTolerance(Real tolerance) {
+		QL_REQUIRE(samples_ == Null<Size>(),
+			"number of samples already set");
+		QL_REQUIRE(RNG::allowsErrorEstimate,
+			"chosen random generator policy "
+			"does not allow an error estimate");
+		tolerance_ = tolerance;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withMaxSamples(Size samples) {
+		maxSamples_ = samples;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withSeed(BigNatural seed) {
+		seed_ = seed;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withBrownianBridge(bool brownianBridge) {
+		brownianBridge_ = brownianBridge;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline MakeMCEuropeanEngine_2<RNG, S>&
+		MakeMCEuropeanEngine_2<RNG, S>::withAntitheticVariate(bool b) {
+		antithetic_ = b;
+		return *this;
+	}
+
+	template <class RNG, class S>
+	inline
+		MakeMCEuropeanEngine_2<RNG, S>::operator boost::shared_ptr<PricingEngine>()
+		const {
+		QL_REQUIRE(steps_ != Null<Size>() || stepsPerYear_ != Null<Size>(),
+			"number of steps not given");
+		QL_REQUIRE(steps_ == Null<Size>() || stepsPerYear_ == Null<Size>(),
+			"number of steps overspecified");
+		return boost::shared_ptr<PricingEngine>(new
+			MCEuropeanEngine_2<RNG, S>(process_,
+				steps_,
+				stepsPerYear_,
+				brownianBridge_,
+				antithetic_,
+				samples_, tolerance_,
+				maxSamples_,
+				seed_));
+	}
+
+
+
+	inline EuropeanPathPricer_2::EuropeanPathPricer_2(Option::Type type,
+		Real strike,
+		DiscountFactor discount)
+		: payoff_(type, strike), discount_(discount) {
+		QL_REQUIRE(strike >= 0.0,
+			"strike less than zero not allowed");
+	}
+
+	inline Real EuropeanPathPricer_2::operator()(const Path& path) const {
+		QL_REQUIRE(path.length() > 0, "the path cannot be empty");
+		return payoff_(path.back()) * discount_;
+	}
 
 }
 

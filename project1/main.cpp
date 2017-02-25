@@ -4,9 +4,7 @@
 #include <ql/pricingengines/vanilla/mceuropeanengine.hpp>
 #include <ql/quantlib.hpp>
 #include <iostream>
-
 using namespace QuantLib;
-
 int main() {
 
     try {
@@ -59,11 +57,11 @@ int main() {
 			));
 		
 		// add the constant stochastique process 
-		//a Problem here saying that constantBlacksholesModel is virtual...
-		boost::shared_ptr<constantBlackScholesModel> 
+		//
+		/*boost::shared_ptr<constantBlackScholesModel> 
 			ConstantProcess = boost::shared_ptr<constantBlackScholesModel>
 			(new constantBlackScholesModel(
-			underlyingV,excerciceDate, termStructure, flatVolTS, dividend));
+			underlyingV,excerciceDate, termStructure, flatVolTS, dividend));*/
 
 		// add normal process
 		boost::shared_ptr<GeneralizedBlackScholesProcess>
@@ -93,10 +91,10 @@ int main() {
 				));
 
 		Real OptionPrice = europeanOption.NPV();
-
+		std::cout <<"Option Price"<< OptionPrice << std::endl;
 		
 
-
+		system("pause");
         return 0;
 
     } catch (std::exception& e) {

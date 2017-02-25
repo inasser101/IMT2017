@@ -32,12 +32,20 @@ namespace QuantLib {
 
 		Real diffusion(Time t, Real x) const;
 	
-		
+
+		 Real variance(const StochasticProcess1D&,
+			Time t0, Real x0, Time dt) const ;
+
+		 Real x0() const;
+	};
+	//! \name 1-D stochastic process interface
+	//@{
+	//! returns the initial value of the state variable
 
 	
         // your implementation goes here
         
-    };
+    
 
 }
 

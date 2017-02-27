@@ -1,4 +1,3 @@
-
 #include "constantblackscholesprocess.hpp"
 #include "mceuropeanengine.hpp"
 #include <ql/pricingengines/vanilla/mceuropeanengine.hpp>
@@ -7,7 +6,7 @@
 using namespace QuantLib;
 int main() {
 
-    try {
+	try {
 		//Specify (1) STrike,(2) current stock price,(3)date count convention,(4) current date
 		//		  (5) Maturity Dtae, (6) interest Rate, (7) dividend Yield, (8) Calendar for specific market
 		//		  (9) Volatility, (10) Option Type
@@ -29,40 +28,40 @@ int main() {
 
 		//handle for Object 
 		// const Handle<Quote>& 
-			
+
 		Handle<Quote> underlyingV(
 			boost::shared_ptr<Quote>(
-			new SimpleQuote(underlying)
-			));
-		
+				new SimpleQuote(underlying)
+				));
+
 		// Construct the Rate TS object, the pointer and the handle 
-		
+
 		Handle<YieldTermStructure> termStructure(
 			boost::shared_ptr<YieldTermStructure>(
-			new FlatForward(settlementDate, riskFreeRate, dayCounter)
-			));
-	
+				new FlatForward(settlementDate, riskFreeRate, dayCounter)
+				));
+
 		// Construct the dividend TS Object ...,
-			
+
 		Handle<YieldTermStructure> dividend
 			(boost::shared_ptr<YieldTermStructure>(
-			new FlatForward(settlementDate, dividendYield, dayCounter)
-			));
-		
-			
+				new FlatForward(settlementDate, dividendYield, dayCounter)
+				));
+
+
 		// Construct the volatility TS object ...,
 		Handle<BlackVolTermStructure> flatVolTS(
 			boost::shared_ptr<BlackVolTermStructure>(
-			new BlackConstantVol(settlementDate, calendar, volatility, dayCounter)
-			));
-		
+				new BlackConstantVol(settlementDate, calendar, volatility, dayCounter)
+				));
+
 		// add the constant stochastique process 
 		//
-		/*boost::shared_ptr<constantBlackScholesModel> 
-			ConstantProcess = boost::shared_ptr<constantBlackScholesModel>
-			(new constantBlackScholesModel(
-			underlyingV,excerciceDate, termStructure, flatVolTS, dividend));*/
-
+		/*boost::shared_ptr<constantBlackScholesModel>
+		ConstantProcess = boost::shared_ptr<constantBlackScholesModel>
+		(new constantBlackScholesModel(
+		underlyingV,excerciceDate, termStructure, flatVolTS, dividend));*/
+		
 		// add normal process
 		boost::shared_ptr<GeneralizedBlackScholesProcess>
 			nProcess = boost::shared_ptr<GeneralizedBlackScholesProcess>
@@ -72,7 +71,7 @@ int main() {
 		// Construct the Option excercice object ...,
 		boost::shared_ptr<Exercise> exercise(
 			new EuropeanExercise(excerciceDate));
-	
+
 		//Construct the Option payoff 
 
 		boost::shared_ptr<StrikedTypePayoff> payoff(
@@ -82,27 +81,62 @@ int main() {
 		//Construct the Option,
 
 		VanillaOption europeanOption(payoff, exercise);
-
+		VanillaOption europeanOption_2(payoff, exercise);
 		//Pricing ENgine
 
 		europeanOption.setPricingEngine(
 			boost::shared_ptr<PricingEngine>(
 				new AnalyticEuropeanEngine(nProcess)
 				));
-
+		europeanOption_2.setPricingEngine(
+			boost::shared_ptr<PricingEngine>(
+				new AnalyticEuropeanEngine(nProcess)
+				));
 		Real OptionPrice = europeanOption.NPV();
-		std::cout <<"Option Price"<< OptionPrice << std::endl;
+		std::cout << "Option Price" << OptionPrice << std::endl;
+
+
+		europeanOption.setPricingEngine(
+			boost::shared_ptr<PricingEngine>(
+				new MCEuropeanEngine<PseudoRandom>(
+					nProcess, 100,
+					Null<Size>(),
+					false,
+					false,
+					10000,
+					Null<Real>(),
+					Null<Size>(), SeedGenerator::instance().get()
+					))
+			);
 		
-
+		std::cout << europeanOption.NPV() << std::endl;
+		std::cout << europeanOption.errorEstimate() << std::endl;
 		system("pause");
-        return 0;
+		europeanOption_2.setPricingEngine(
+			boost::shared_ptr<PricingEngine>(
+				new MCEuropeanEngine_2<PseudoRandom>(
+					nProcess, 100,
+					Null<Size>(),
+					false,
+					false,
+					10000,
+					Null<Real>(),
+					Null<Size>(), SeedGenerator::instance().get()
+					))
+			);
+		std::cout << europeanOption_2.NPV() << std::endl;
+		std::cout << europeanOption_2.errorEstimate() << std::endl;
+		system("pause");
+		return 0;
 
-    } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
-    } catch (...) {
-        std::cerr << "unknown error" << std::endl;
-        return 1;
-    }
+	}
+	catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
+	catch (...) {
+		std::cerr << "unknown error" << std::endl;
+		return 1;
+	}
 }
 

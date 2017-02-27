@@ -2,7 +2,7 @@
 #include "mceuropeanengine.hpp"
 #include <ql/pricingengines/vanilla/mceuropeanengine.hpp>
 #include <ql/quantlib.hpp>
-#include <iostream>
+#include <time.h>
 using namespace QuantLib;
 int main() {
 
@@ -92,14 +92,16 @@ int main() {
 			boost::shared_ptr<PricingEngine>(
 				new AnalyticEuropeanEngine(nProcess)
 				));
+		std::cout << "--------------------------------------------------------------------" << std::endl;
 		Real OptionPrice = europeanOption.NPV();
-		std::cout << "Option Price" << OptionPrice << std::endl;
-
-
+		std::cout << "OptionPrice = europeanOption.NPV()=" << OptionPrice << std::endl;
+		std::cout << "--------------------------------------------------------------------" << std::endl;
+		std::cout << "--------------------------------------------------------------------" << std::endl;
+		std::cout << "MCEuropeanEngine with GeneralizedBlackScholesProcess" <<std::endl ;
 		europeanOption.setPricingEngine(
 			boost::shared_ptr<PricingEngine>(
 				new MCEuropeanEngine<PseudoRandom>(
-					nProcess, 100,
+					nProcess, 10,
 					Null<Size>(),
 					false,
 					false,
@@ -109,13 +111,15 @@ int main() {
 					))
 			);
 		
-		std::cout << europeanOption.NPV() << std::endl;
-		std::cout << europeanOption.errorEstimate() << std::endl;
-		system("pause");
+		std::cout<<"Option Price " << europeanOption.NPV() << std::endl;
+		std::cout <<"Error Estimation "<< europeanOption.errorEstimate() << std::endl;
+		std::cout << "--------------------------------------------------------------------" << std::endl;
+		std::cout << "--------------------------------------------------------------------" << std::endl;
+		std::cout << "MCEuropeanEngine with constantBlackScholesModel" << std::endl;
 		europeanOption_2.setPricingEngine(
 			boost::shared_ptr<PricingEngine>(
 				new MCEuropeanEngine_2<PseudoRandom>(
-					nProcess, 100,
+					nProcess, 10,
 					Null<Size>(),
 					false,
 					false,
@@ -124,18 +128,23 @@ int main() {
 					Null<Size>(), SeedGenerator::instance().get()
 					))
 			);
-		std::cout << europeanOption_2.NPV() << std::endl;
-		std::cout << europeanOption_2.errorEstimate() << std::endl;
+		
+		std::cout << "Option Price " << europeanOption_2.NPV() << std::endl;
+		std::cout << "Error Estimation " << europeanOption_2.errorEstimate() << std::endl;
+		std::cout << "----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
 		system("pause");
 		return 0;
 
 	}
 	catch (std::exception& e) {
+
 		std::cerr << e.what() << std::endl;
+		system("pause");
 		return 1;
 	}
 	catch (...) {
 		std::cerr << "unknown error" << std::endl;
+		system("pause");
 		return 1;
 	}
 }

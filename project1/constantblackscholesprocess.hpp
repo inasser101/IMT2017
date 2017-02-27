@@ -9,7 +9,16 @@
 #include <ql/termstructures/volatility/equityfx/localvolcurve.hpp>
 #include <ql/termstructures/volatility/equityfx/localconstantvol.hpp>
 namespace QuantLib {
+	//! \name 1-D stochastic process interface
+	//@{
+	//! returns the initial value of the state variable
+
 	class constantBlackScholesModel : public StochasticProcess1D {
+		/*! This class describes the stochastic process \f$ S \f$ governed by
+		\f[
+		d\ln S(t) = (r(t) - q(t) ) dt	+ \sigma dW_t.
+		\f]
+		*/
 	private:
 		Handle<Quote> underlyingValue_;
 		Handle<YieldTermStructure> riskFreeRate_;

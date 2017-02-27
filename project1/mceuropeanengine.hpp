@@ -33,6 +33,7 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 #include <ql/processes/eulerdiscretization.hpp>
 #include <ql/stochasticprocess.hpp>
 #include <ql/quantlib.hpp>
+
 namespace QuantLib {
 
 	//! European option pricing engine using Monte Carlo simulation
@@ -72,39 +73,35 @@ namespace QuantLib {
 			useConstantProcess_ = true;
 		}
 		boost::shared_ptr<path_generator_type> pathGenerator() const {
-			std::cout << "here" << std::endl;
 			Size dimensions = process_->factors();
 		
 			TimeGrid grid = this->timeGrid();
 			typename RNG::rsg_type generator =
 				RNG::make_sequence_generator(dimensions*(grid.size() - 1), seed_);
-			//if (this->useConstantProcess_) {
+			if (this->useConstantProcess_) {
+			boost::shared_ptr<GeneralizedBlackScholesProcess> process =
+				boost::dynamic_pointer_cast<GeneralizedBlackScholesProcess>(
+					this->process_);
 				return boost::shared_ptr<path_generator_type>(
 					new path_generator_type(
 
 						boost::shared_ptr<constantBlackScholesModel>(
-							new constantBlackScholesModel(process_->stateVariable(), this->arguments_.exercise->lastDate(),process_->riskFreeRate(),
+							new constantBlackScholesModel(process->stateVariable(), this->arguments_.exercise->lastDate(),process->riskFreeRate(),
 							
-								process_->blackVolatility(),process_->dividendYield(), boost::shared_ptr<StochasticProcess1D::discretization>(new EulerDiscretization))),
+								process->blackVolatility(),process->dividendYield(), boost::shared_ptr<StochasticProcess1D::discretization>(new EulerDiscretization))),
 						grid,
 						generator,
 						brownianBridge_)
 					);
 
-			/*}
+			}
 			else {
 				return boost::shared_ptr<path_generator_type>(
 					new path_generator_type(process_, grid,
 						generator, brownianBridge_));
-			}*/
+			}
 		}
-	private:
-		boost::shared_ptr<GeneralizedBlackScholesProcess> process_;
-		bool antithetic_;
-		Size steps_, stepsPerYear_, samples_, maxSamples_;
-		Real tolerance_;
-		bool brownianBridge_;
-		BigNatural seed_;
+	
 	};
 
 	//! Monte Carlo European engine factory

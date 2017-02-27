@@ -32,8 +32,6 @@ namespace QuantLib {
 
 
 
-	// this will be removed
-
 	Real constantBlackScholesModel::drift(Time t, Real x) const {
 		return driftC_*x;
 	}

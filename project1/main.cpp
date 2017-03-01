@@ -20,11 +20,11 @@ int main() {
 		Calendar calendar = TARGET();
 		Volatility volatility = 0.20;
 		Option::Type type(Option::Call);
-		std::cout << "Underlying Value = " << underlying << std::endl;
+	/*	std::cout << "Underlying Value = " << underlying << std::endl;
 		std::cout << "Strike  =  " << strike << std::endl;
 		std::cout << "Risk-free Rate = " << io::rate(riskFreeRate) << std::endl;
 		std::cout << "Dividend yield = " << io::rate(dividendYield) << std::endl;
-		std::cout << "Volatility = " << io::volatility(volatility) << std::endl;
+		std::cout << "Volatility = " << io::volatility(volatility) << std::endl;*/
 
 		//handle for Object 
 		// const Handle<Quote>& 
@@ -98,20 +98,23 @@ int main() {
 		std::cout << "--------------------------------------------------------------------" << std::endl;
 		std::cout << "--------------------------------------------------------------------" << std::endl;
 		std::cout << "MCEuropeanEngine with GeneralizedBlackScholesProcess" <<std::endl ;
+
+			
 		europeanOption.setPricingEngine(
 			boost::shared_ptr<PricingEngine>(
 				new MCEuropeanEngine<PseudoRandom>(
 					nProcess, 10,
 					Null<Size>(),
-					false,
+					true,
 					false,
 					10000,
 					Null<Real>(),
 					Null<Size>(), SeedGenerator::instance().get()
 					))
 			);
-		
+		clock_t tStart = clock();
 		std::cout<<"Option Price " << europeanOption.NPV() << std::endl;
+		printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 		std::cout <<"Error Estimation "<< europeanOption.errorEstimate() << std::endl;
 		std::cout << "--------------------------------------------------------------------" << std::endl;
 		std::cout << "--------------------------------------------------------------------" << std::endl;
@@ -121,15 +124,16 @@ int main() {
 				new MCEuropeanEngine_2<PseudoRandom>(
 					nProcess, 10,
 					Null<Size>(),
-					false,
+					true,
 					false,
 					10000,
 					Null<Real>(),
 					Null<Size>(), SeedGenerator::instance().get()
 					))
 			);
-		
+		clock_t tStart2 = clock();
 		std::cout << "Option Price " << europeanOption_2.NPV() << std::endl;
+		printf("Time taken: %.2fs\n", (double)(clock() - tStart2) / CLOCKS_PER_SEC);
 		std::cout << "Error Estimation " << europeanOption_2.errorEstimate() << std::endl;
 		std::cout << "----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
 		system("pause");
